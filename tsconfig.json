@@ -3,11 +3,13 @@
 	"compilerOptions": {
 		"resolveJsonModule": true,
 		"outDir": "./dist",
+		"rootDir": "./src",
 		"module": "ESNext",
 		"target": "ESNext",
 		"moduleResolution": "Node",
 		"esModuleInterop": true,
 		"sourceMap": true,
+		"sourceRoot": "./",
 		"removeComments": true,
 		"noImplicitAny": true,
 		"strictNullChecks": true,
@@ -15,7 +17,8 @@
 		"strictBindCallApply": true,
 		"strictPropertyInitialization": true,
 		"noImplicitThis": true,
-		"alwaysStrict": true
-	},
-	"include": ["src"]
+		"alwaysStrict": true,
+		"declaration": true,
+		"declarationMap": true
+	}
 }
