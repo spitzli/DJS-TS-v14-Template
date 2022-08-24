@@ -1,18 +1,13 @@
 import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
-import type Command from '../types/Command';
+import type Command from '../types/Command.js';
 
 export const command: Command = {
-	data: new SlashCommandBuilder()
-		.setName('ping')
-		.setDescription('Replies with Pong!')
-		.addStringOption((option) =>
-			option
-				.setName('message')
-				.setDescription('The message to send')
-				.setRequired(false),
-		),
-	async execute(interaction: CommandInteraction) {
-		await interaction.reply('Pong!');
+	data: new SlashCommandBuilder().setName('ping').setDescription('pong'),
+	execute(interaction: CommandInteraction): Promise<0 | 1> {
+		return new Promise(async (res) => {
+			await interaction.reply("OWO I'm pong!");
+			res(0);
+		});
 	},
 };
 
