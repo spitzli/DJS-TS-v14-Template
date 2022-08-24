@@ -1,10 +1,11 @@
 import { ChannelType, CommandInteraction } from 'discord.js';
 import type Command from '../types/Command';
 import type Client from '../classes/Client';
+import type Event from '../types/Event';
 
-export default {
+export const event: Event = {
 	name: 'interactionCreate',
-	async execute(interaction: CommandInteraction) {
+	async execute(client: Client, interaction: CommandInteraction) {
 		if (
 			!interaction.isChatInputCommand() ||
 			!interaction.channel ||
@@ -23,7 +24,7 @@ export default {
 		if (!command) return;
 
 		try {
-			await command.execute(interaction);
+			await command.execute(interaction, client);
 		} catch (error) {
 			console.error(error);
 			await interaction.reply({
@@ -33,3 +34,5 @@ export default {
 		}
 	},
 };
+
+export default event;
