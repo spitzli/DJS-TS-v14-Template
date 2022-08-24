@@ -3,11 +3,12 @@ import type {
 	SlashCommandBuilder,
 	SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
+import type Client from '../classes/Client.js';
 
 export default interface Command {
 	data:
 		| SlashCommandBuilder
 		| Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
 		| SlashCommandSubcommandsOnlyBuilder;
-	execute(interaction: CommandInteraction, ...args: string[]): Promise<void>;
+	execute(interaction: CommandInteraction, client?: Client): Promise<0 | 1>;
 }
