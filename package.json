@@ -4,18 +4,24 @@
 	"main": "bot.js",
 	"repository": "https://github.com/spitzli/Illusion.git",
 	"author": "Dominik Spitzli <dominik@spitzli.dev>",
+	"contributors": [
+		{
+			"name": "HarakuneSan",
+			"email": "baumg.leon@protonmail.com",
+			"url": "https://discord.gg/k5eT9jhAHB"
+		}
+	],
 	"license": "MIT",
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"prepare": "husky install",
 		"lint": "eslint --cache --fix src",
 		"prettier": "prettier --write src",
 		"compile": "tsc",
 		"copy": "cp src/.env dist",
 		"build": "npm run compile && npm run copy",
 		"watch": "cd src/ && nodemon --exec ts-node-esm --files index.ts",
-		"dev": "nodemon dist/index.js"
+		"dev": "nodemon dist/bot.js"
 	},
 	"dependencies": {
 		"@discordjs/rest": "^1.0.1",
@@ -29,12 +35,9 @@
 		"@typescript-eslint/parser": "^5.30.7",
 		"eslint": "^8.22.0",
 		"eslint-config-prettier": "^8.5.0",
-		"husky": "^8.0.1",
 		"lint-staged": "^13.0.3",
 		"nodemon": "^2.0.19",
 		"prettier": "^2.7.1",
-		"ts-node": "^10.9.1",
-		"tsc-watch": "^5.0.3",
 		"typescript": "^4.7.4"
 	}
 }
