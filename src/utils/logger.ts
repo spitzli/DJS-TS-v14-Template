@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-const { bold, cyan, gray, italic, red, yellow } = chalk;
+const { bold, cyan, gray, italic, red, yellow, greenBright, green } = chalk;
 
 export enum LogLevels {
 	Debug,
@@ -41,11 +41,32 @@ export function logger({
 		if (!color) color = noColor;
 
 		const date = new Date();
+
 		const log = [
-			`[${date.toLocaleDateString()} ${date.toLocaleTimeString()}]`,
-			color(prefixes.get(level) || 'DEBUG'),
-			name ? `${name} >` : '>',
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			`${gray('[')}${greenBright(
+				(date.getDate() < 10 ? '0' : '') + date.getDate(),
+			)}${green('/')}${greenBright(
+				(date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1),
+			)}${green('/')}${greenBright(date.getFullYear())} ${gray('-')} ${
+				greenBright(
+					(date.getHours().toString().length == 1 ? '0' : '') +
+						date.getHours().toString(),
+				) +
+				green(':') +
+				greenBright(
+					(date.getMinutes().toString().length == 1 ? '0' : '') +
+						date.getMinutes().toString(),
+				) +
+				(level === LogLevels.Debug
+					? green(':') +
+					  greenBright(
+							(date.getSeconds().toString().length == 1 ? '0' : '') +
+								date.getSeconds().toString(),
+					  )
+					: '')
+			}${gray(']')}`,
+			`${name ? cyan(name) : ''} ${gray('|')}`,
+			`${color(prefixes.get(level) || 'DEBUG')} ${greenBright('>>')} `,
 			...args,
 		];
 
