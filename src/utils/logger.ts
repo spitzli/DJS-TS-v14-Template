@@ -57,7 +57,7 @@ export function logger({
 					(date.getMinutes().toString().length == 1 ? '0' : '') +
 						date.getMinutes().toString(),
 				) +
-				(level === LogLevels.Debug
+				(level === LogLevels.Debug || logLevel === 0
 					? green(':') +
 					  greenBright(
 							(date.getSeconds().toString().length == 1 ? '0' : '') +
