@@ -11,6 +11,8 @@ import path from 'node:path';
 import type Event from '../types/Event.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import chalk from 'chalk';
+import { performance } from 'perf_hooks';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +21,8 @@ export default class Client extends DJSClient {
 
 	// Utils
 	log;
+
+	startTime = performance.now();
 
 	async init(token: string): Promise<void> {
 		await this.login(token);
@@ -36,24 +40,36 @@ export default class Client extends DJSClient {
 
 		const commandsPath = path.join(__dirname, '..', 'commands');
 
+		let start = performance.now();
+		this.log.info(`Loading ${chalk.yellow('commands')}...`);
+		// TODO register commands, not just load them
 		const commandFiles = fs
 			.readdirSync(commandsPath)
 			.filter((file) => file.endsWith('.js'));
 
 		for (const file of commandFiles) {
+			const start = performance.now();
 			const filePath: string = path.join(commandsPath, file);
-			const start = Date.now();
 			const command: Command = (await import(`file://${filePath}`))
 				.default as Command;
 
-			this.log.info(`Loading command ${command.data.name}...`);
-
 			this.commands.set(command.data.name, command);
-
-			this.log.info(
-				`Loaded command ${command.data.name}! in ${Date.now() - start}ms`,
+			this.log.debug(
+				`Loaded command ${command.data.name} - took ${chalk.blue(
+					`${Math.floor(performance.now() - start)}ms`,
+				)}`,
 			);
 		}
+
+		this.log.info(
+			`Finisched loading ${chalk.yellow(
+				this.commands.size + ' command',
+				this.commands.size == 1 ? '' : 's',
+			)} - took ${chalk.blue(`${Math.floor(performance.now() - start)}ms`)}`,
+		);
+
+		start = performance.now();
+		this.log.info(`Loading ${chalk.yellow('events')}...`);
 
 		const eventsPath = path.join(__dirname, '..', 'events');
 		const eventFiles = fs
@@ -72,39 +88,32 @@ export default class Client extends DJSClient {
 		// Loop through event files and load them into the event map
 		for (const file of eventFiles) {
 			const filePath = path.join(eventsPath, file);
-			const start = Date.now();
 			const event: Event = (await import(`file://${filePath}`))
 				.default as Event;
 
 			if (event.once) {
-				this.log.info(`Loading once event ${event.name}...`);
 				const onceMap = events.get('once')!;
 				let eventMap =
 					onceMap.get(event.name) ??
 					onceMap.set(event.name, []).get(event.name)!;
 
 				eventMap.push(event);
-				this.log.info(
-					`loaded once event ${event.name}! in ${Date.now() - start}ms`,
-				);
 			}
 
 			if (!event.once) {
-				this.log.info(`Loading event ${event.name}...`);
 				const onMap = events.get('once')!;
 				let eventMap =
 					onMap.get(event.name) ?? onMap.set(event.name, []).get(event.name)!;
 
 				eventMap.push(event);
-				this.log.info(`loaded event ${event.name}! in ${Date.now() - start}ms`);
 			}
 		}
 
 		// Create listeners for the events
 		for (const [key, eventMap] of events.entries()) {
 			if (key == 'once') {
-				this.log.info(`Register once events...`);
 				for (const [key, events] of eventMap.entries()) {
+					this.log.debug(`Loading ${key} events(once)`);
 					this.once(key, (...args) => {
 						events.forEach((event) => {
 							event.execute(this, ...args);
@@ -114,9 +123,9 @@ export default class Client extends DJSClient {
 			}
 
 			if (key != 'once') {
-				this.log.info(`Register events...`);
 				for (const [key, events] of eventMap.entries()) {
 					this.once(key, (...args) => {
+						this.log.debug(`Loading ${key} events (on)`);
 						events.forEach((event) => {
 							event.execute(this, ...args);
 						});
@@ -124,6 +133,19 @@ export default class Client extends DJSClient {
 				}
 			}
 		}
+
+		let eventAmout = 0;
+		events.forEach((events) => {
+			events.forEach((events) => {
+				eventAmout += events.length;
+			});
+		});
+
+		this.log.info(
+			`Finisched loading ${chalk.yellow(
+				eventAmout + ' event' + (eventAmout == 1 ? '' : 's'),
+			)} - took ${chalk.blue(`${Math.floor(performance.now() - start)}ms`)}`,
+		);
 	}
 
 	// Login
