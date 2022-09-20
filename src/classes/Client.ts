@@ -54,6 +54,9 @@ export default class Client extends DJSClient {
 				.default as Command;
 
 			this.log.debug(`Loading command ${command.options.name}...`);
+
+			this.commands.set(command.options.name, command);
+
 			this.log.debug(
 				`Loaded command ${command.options.name} - took ${Date.now() - start}ms`,
 			);
@@ -65,7 +68,6 @@ export default class Client extends DJSClient {
 			} - took ${chalk.green(Math.floor(performance.now() - start) + 'ms')}`,
 		);
 
-			this.commands.set(command.data.name, command);
 		// Check if commands changed
 
 		let file = '[]';
