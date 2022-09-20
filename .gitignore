@@ -1,6 +1,7 @@
 dist
 .vscode
 test.*
+deploy-commands.ts
 
 # Config files
 .env
