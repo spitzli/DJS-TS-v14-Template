@@ -11,11 +11,14 @@ import path from 'node:path';
 import type Event from '../types/Event.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import chalk from 'chalk';
+import { performance } from 'node:perf_hooks';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default class Client extends DJSClient {
 	readonly commands: Collection<string, Command> = new Collection();
+	startTime = performance.now();
 
 	// Utils
 	log;
@@ -34,6 +37,10 @@ export default class Client extends DJSClient {
 				: 1,
 		});
 
+		let start = performance.now();
+
+		this.log.info(`Loading ${chalk.yellow('commands')}...`);
+
 		const commandsPath = path.join(__dirname, '..', 'commands');
 
 		const commandFiles = fs
@@ -46,15 +53,32 @@ export default class Client extends DJSClient {
 			const command: Command = (await import(`file://${filePath}`))
 				.default as Command;
 
-			this.log.info(`Loading command ${command.data.name}...`);
+			this.log.debug(`Loading command ${command.options.name}...`);
+			this.log.debug(
+				`Loaded command ${command.options.name} - took ${Date.now() - start}ms`,
+			);
+		this.log.info(
+			`Loaded ${
+				this.commands.size +
+				' ' +
+				chalk.yellow('command' + (this.commands.size == 1 ? '' : 's'))
+			} - took ${chalk.green(Math.floor(performance.now() - start) + 'ms')}`,
+		);
 
 			this.commands.set(command.data.name, command);
+			let start = performance.now();
+			this.log.info('Redeploying commands because of changes');
 
 			this.log.info(
-				`Loaded command ${command.data.name}! in ${Date.now() - start}ms`,
+				`Redeployed ${this.commands.size} commands - took ${chalk.green(
+					Math.floor(performance.now() - start) + 'ms',
+				)}`,
 			);
 		}
 
+			this.log.info('Commands up to date');
+		this.log.info(`Loading ${chalk.blue('events')}`);
+		start = performance.now();
 		const eventsPath = path.join(__dirname, '..', 'events');
 		const eventFiles = fs
 			.readdirSync(eventsPath)
@@ -72,38 +96,44 @@ export default class Client extends DJSClient {
 		// Loop through event files and load them into the event map
 		for (const file of eventFiles) {
 			const filePath = path.join(eventsPath, file);
-			const start = Date.now();
+			const start = performance.now();
 			const event: Event = (await import(`file://${filePath}`))
 				.default as Event;
 
 			if (event.once) {
-				this.log.info(`Loading once event ${event.name}...`);
+				this.log.debug(`Loading once event ${event.name}...`);
 				const onceMap = events.get('once')!;
 				let eventMap =
 					onceMap.get(event.name) ??
 					onceMap.set(event.name, []).get(event.name)!;
 
 				eventMap.push(event);
-				this.log.info(
-					`loaded once event ${event.name}! in ${Date.now() - start}ms`,
+				this.log.debug(
+					`Loaded once event ${event.name} - took ${Math.floor(
+						performance.now() - start,
+					)}ms`,
 				);
 			}
 
 			if (!event.once) {
-				this.log.info(`Loading event ${event.name}...`);
+				this.log.debug(`Loading event ${event.name}...`);
 				const onMap = events.get('once')!;
 				let eventMap =
 					onMap.get(event.name) ?? onMap.set(event.name, []).get(event.name)!;
 
 				eventMap.push(event);
-				this.log.info(`loaded event ${event.name}! in ${Date.now() - start}ms`);
+				this.log.debug(
+					`Loaded event ${event.name} - took ${Math.floor(
+						performance.now() - start,
+					)}ms`,
+				);
 			}
 		}
 
 		// Create listeners for the events
 		for (const [key, eventMap] of events.entries()) {
 			if (key == 'once') {
-				this.log.info(`Register once events...`);
+				this.log.debug(`Register once events...`);
 				for (const [key, events] of eventMap.entries()) {
 					this.once(key, (...args) => {
 						events.forEach((event) => {
@@ -114,7 +144,7 @@ export default class Client extends DJSClient {
 			}
 
 			if (key != 'once') {
-				this.log.info(`Register events...`);
+				this.log.debug(`Register events...`);
 				for (const [key, events] of eventMap.entries()) {
 					this.once(key, (...args) => {
 						events.forEach((event) => {
@@ -124,6 +154,20 @@ export default class Client extends DJSClient {
 				}
 			}
 		}
+
+		this.log.info(
+			`Loaded ${eventAmount + ' ' + chalk.blue('events')} - took ${chalk.green(
+				Math.floor(performance.now() - start) + 'ms',
+			)}`,
+		);
+
+		this.log.info(
+			`Successfully started the ${chalk.hex('8f00ff')(
+				'client',
+			)} - took ${chalk.green(
+				Math.floor(performance.now() - this.startTime) + 'ms',
+			)}`,
+		);
 	}
 
 	// Login
