@@ -32,7 +32,8 @@ export default class Client extends DJSClient {
 			name: `BOT - ${this.user.tag}`,
 			logLevel: process.env.LOG_LEVEL
 				? logLevels[process.env.LOG_LEVEL]
-				: process.env.NODE_ENV === ('debug' || 'development')
+				: process.env.NODE_ENV ===
+				  ('debug'.toUpperCase() || 'development'.toUpperCase())
 				? 0
 				: 1,
 		});
