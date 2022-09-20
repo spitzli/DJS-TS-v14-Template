@@ -130,6 +130,8 @@ export default class Client extends DJSClient {
 			.readdirSync(eventsPath)
 			.filter((file) => file.endsWith('.js'));
 
+		let eventAmount = 0;
+
 		// Create Map for events
 		const events = new Collection<
 			'once' | 'on',
@@ -141,6 +143,7 @@ export default class Client extends DJSClient {
 
 		// Loop through event files and load them into the event map
 		for (const file of eventFiles) {
+			eventAmount++;
 			const filePath = path.join(eventsPath, file);
 			const start = performance.now();
 			const event: Event = (await import(`file://${filePath}`))
