@@ -6,7 +6,7 @@ import type {
 import type Client from '../classes/Client.js';
 
 export default interface Command {
-	data:
+	options:
 		| SlashCommandBuilder
 		| Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
 		| SlashCommandSubcommandsOnlyBuilder;
