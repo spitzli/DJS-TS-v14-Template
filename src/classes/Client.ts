@@ -61,6 +61,8 @@ export default class Client extends DJSClient {
 			this.log.debug(
 				`Loaded command ${command.options.name} - took ${Date.now() - start}ms`,
 			);
+		}
+
 		this.log.info(
 			`Loaded ${
 				this.commands.size +
