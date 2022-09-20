@@ -66,8 +66,45 @@ export default class Client extends DJSClient {
 		);
 
 			this.commands.set(command.data.name, command);
+		// Check if commands changed
+
+		let file = '[]';
+
+		if (!fs.existsSync(path.join(__dirname, '..', 'command_insances.json'))) {
+			file = fs
+				.readFileSync(path.join(__dirname, '..', 'command_instances.json'))
+				.toString();
+		}
+
+		try {
+			JSON.parse(file);
+		} catch {
+			file = '[]';
+		}
+
+		const savedCommandInstances: Command['options'][] = JSON.parse(file);
+		const currentCommandInstances = JSON.parse(
+			JSON.stringify(this.commands.map((c) => c.options)),
+		);
+
+		// Redeploy commands if they changed
+		if (
+			JSON.stringify(savedCommandInstances) !==
+			JSON.stringify(currentCommandInstances)
+		) {
 			let start = performance.now();
 			this.log.info('Redeploying commands because of changes');
+			const commandManager =
+				process.env.COMMAND_MODE == 'DEV_SERVER' && process.env.DEV_GUILD_ID
+					? this.guilds.cache.get(process.env.DEV_GUILD_ID)!.commands
+					: this.application!.commands;
+
+			await commandManager.set(this.commands.map((c) => c.options));
+
+			fs.writeFileSync(
+				path.join(__dirname, '..', 'command_instances.json'),
+				JSON.stringify(this.commands.map((c) => c.options.toJSON())),
+			);
 
 			this.log.info(
 				`Redeployed ${this.commands.size} commands - took ${chalk.green(
@@ -76,9 +113,16 @@ export default class Client extends DJSClient {
 			);
 		}
 
+		if (
+			JSON.stringify(savedCommandInstances) ===
+			JSON.stringify(currentCommandInstances)
+		)
 			this.log.info('Commands up to date');
+
+		// Load events
 		this.log.info(`Loading ${chalk.blue('events')}`);
 		start = performance.now();
+
 		const eventsPath = path.join(__dirname, '..', 'events');
 		const eventFiles = fs
 			.readdirSync(eventsPath)
