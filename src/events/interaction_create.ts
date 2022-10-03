@@ -17,9 +17,13 @@ export const event: Event = {
 			`${interaction.user.tag} in #${interaction.channel.name} triggered an interaction.`,
 		);
 
-		const command: Command = (interaction.client as Client).commands.get(
+		const command: Command = client.commands.get(
 			interaction.commandName,
 		) as Command;
+
+		if (command.permissions) {
+			const permissionType = command.permissions.roles;
+		}
 
 		if (!command) return;
 

@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import chalk from 'chalk';
 import { performance } from 'node:perf_hooks';
+import type Config from '../types/Config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +23,8 @@ export default class Client extends DJSClient {
 
 	// Utils
 	log;
+
+	readonly permissions: Config['permissions'];
 
 	async init(token: string): Promise<void> {
 		await this.login(token);
@@ -249,8 +252,9 @@ export default class Client extends DJSClient {
 	}
 
 	// Login
-	constructor(clientSettings: ClientOptions) {
+	constructor(clientSettings: ClientOptions, additionalConfig: Config) {
 		super(clientSettings);
+		this.permissions = additionalConfig.permissions;
 		this.log = logger();
 	}
 }
