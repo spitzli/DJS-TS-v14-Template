@@ -7,5 +7,6 @@ declare namespace NodeJS {
 		CLIENT_ID: string;
 		GUILD_ID: string;
 		DEV_GUILD_ID: string;
+		COMMAND_MODE: 'DEV_SERVER' | 'GLOBAL';
 	}
 }
